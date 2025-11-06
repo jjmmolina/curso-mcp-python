@@ -1,6 +1,6 @@
 # Roadmap del Curso MCP en Python
 
-## 🎯 Versión Actual: 1.0.0
+## 🎯 Versión Actual: 1.1.0
 
 ### ✅ Completado
 - [x] Módulo 1: Introducción a MCP (3 lecciones)
@@ -9,20 +9,19 @@
 - [x] Documentación completa (README, FAQ, Guía de Estudio)
 - [x] Configuración de proyecto (requirements, .gitignore)
 - [x] Licencia MIT y guía de contribución
+ - [x] Módulo 3: Características Avanzadas (3 lecciones)
+ - [x] Plantillas de proyectos del Módulo 4
+ - [x] Ejemplos ejecutables en `src/`
 
 ## 🚧 En Progreso
 
-### Versión 1.1.0 (Diciembre 2025)
-- [ ] **Módulo 3 Completo**: Características Avanzadas
-  - [ ] Lección 3.1: Prompts Personalizados
-  - [ ] Lección 3.2: Manejo de Errores y Logging
-  - [ ] Lección 3.3: Seguridad y Mejores Prácticas
+### Versión 1.2.0 (Diciembre 2025)
 - [ ] **Ejemplos Adicionales**:
   - [ ] Conversor de Unidades
   - [ ] Generador de Contraseñas
   - [ ] Lista de Tareas (TODO)
 
-### Versión 1.2.0 (Enero 2026)
+### Versión 1.3.0 (Enero 2026)
 - [ ] **Proyectos Módulo 4**:
   - [ ] Proyecto 1: Servidor de Gestión de Archivos
   - [ ] Proyecto 2: Integración con APIs Externas
@@ -78,9 +77,9 @@
 
 ## 📊 Métricas de Progreso
 
-- **Módulos Completados**: 2/6 (33%)
-- **Lecciones Totales**: 6/20+ (30%)
-- **Ejemplos de Código**: 4/15+ (27%)
+- **Módulos Completados**: 3/6 (50%)
+- **Lecciones Totales**: 9/20+ (45%)
+- **Ejemplos de Código**: 6/15+ (40%)
 - **Proyectos Prácticos**: 1/5 (20%)
 
 ---

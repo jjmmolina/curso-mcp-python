@@ -117,3 +117,35 @@ Para rastrear el uso:
 
 **Configuración completada por**: @jjmmolina
 **Fecha**: Noviembre 6, 2025
+
+---
+
+## ▶️ Ejecutar Ejemplos Localmente (Windows PowerShell)
+
+Estos ejemplos acompañan a las lecciones. Asegúrate de tener el entorno creado e instalar dependencias con `requirements.txt`.
+
+1) Activar el entorno virtual
+
+```powershell
+./venv/Scripts/Activate.ps1
+```
+
+Si PowerShell bloquea scripts, ejecuta (opcional):
+
+```powershell
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+```
+
+2) Ejecutar el servidor de Notas (Módulo 2)
+
+```powershell
+python ./src/tools/notas_server.py
+```
+
+3) Ejecutar el servidor de Prompts de Código (Módulo 3)
+
+```powershell
+python ./src/prompts/code_prompts_server.py
+```
+
+Consulta la sección de problemas comunes en [GUIA-ESTUDIO.md](GUIA-ESTUDIO.md#-solución-de-problemas-comunes) si necesitas ayuda.

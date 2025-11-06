@@ -1,5 +1,7 @@
 # Curso: Model Context Protocol (MCP) en Python
 
+![License](https://img.shields.io/badge/license-MIT-blue.svg) ![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB) ![Status](https://img.shields.io/badge/status-Activo-brightgreen)
+
 ## 📚 Descripción del Curso
 
 Bienvenido al curso completo sobre **Model Context Protocol (MCP)** en Python. Este curso te enseñará desde los fundamentos hasta la implementación avanzada de servidores MCP, permitiéndote crear herramientas que extienden las capacidades de los asistentes de IA como Claude y GitHub Copilot.
@@ -18,6 +20,19 @@ Bienvenido al curso completo sobre **Model Context Protocol (MCP)** en Python. E
 - Conocimientos básicos de Python
 - Familiaridad con conceptos de programación asíncrona (async/await)
 - Editor de código (VS Code recomendado)
+
+## 🧭 Tabla de Contenidos
+
+- [Descripción del Curso](#-descripción-del-curso)
+- [Objetivos del Curso](#-objetivos-del-curso)
+- [Requisitos Previos](#-requisitos-previos)
+- [Estructura del Curso](#-estructura-del-curso)
+- [Cómo Usar Este Curso](#-cómo-usar-este-curso)
+- [Instalación](#-instalación)
+- [Ejecutar los ejemplos](#-ejecutar-los-ejemplos)
+- [Recursos Adicionales](#-recursos-adicionales)
+- [Contribuciones](#-contribuciones)
+- [Licencia](#-licencia)
 
 ## 📖 Estructura del Curso
 
@@ -40,6 +55,7 @@ Bienvenido al curso completo sobre **Model Context Protocol (MCP)** en Python. E
 - [Proyecto 1: Servidor de Gestión de Archivos](modulo4/proyecto1-archivos.md)
 - [Proyecto 2: Integración con APIs Externas](modulo4/proyecto2-apis.md)
 - [Proyecto 3: Sistema de Base de Datos](modulo4/proyecto3-database.md)
+- [Proyecto Final: Proyecto Integrador](modulo4/proyecto-final.md)
 
 ## 🚀 Cómo Usar Este Curso
 
@@ -64,11 +80,25 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
+## ▶️ Ejecutar los ejemplos
+
+Consulta la guía de configuración y ejecución paso a paso (incluye instrucciones para Windows PowerShell):
+
+- Ver: [SETUP.md](SETUP.md#-configurar-github-actions-opcional)
+
+Ejemplos incluidos en este repositorio:
+- Servidor de notas (Módulo 2): `src/tools/notas_server.py`
+- Servidor de prompts de código (Módulo 3): `src/prompts/code_prompts_server.py`
+
+Para ejecutarlos, abre una terminal en la raíz del proyecto y usa los comandos descritos en SETUP.md.
+
 ## 📚 Recursos Adicionales
 
 - [Documentación oficial de MCP](https://modelcontextprotocol.io/)
 - [MCP Python SDK](https://github.com/modelcontextprotocol/python-sdk)
 - [Ejemplos de la comunidad](https://github.com/modelcontextprotocol/servers)
+- [Roadmap del curso](ROADMAP.md)
+- [Guía de estudio](GUIA-ESTUDIO.md)
 
 ## 🤝 Contribuciones
 

@@ -1,7 +1,8 @@
 # Dependencias del Curso MCP en Python
 
-# MCP SDK (versión mínima 1.2.0 para soporte de FastMCP)
-mcp[cli]>=1.2.0
+# MCP SDK (con CLI opcional)
+# Nota: FastMCP está disponible desde versión 1.0.0+
+mcp>=1.0.0
 
 # Herramientas de desarrollo
 python-dotenv>=1.0.0

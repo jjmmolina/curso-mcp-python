@@ -35,14 +35,14 @@ powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | ie
 uv init mi-servidor-mcp
 cd mi-servidor-mcp
 
-# Crear entorno virtual
+# Activar entorno virtual
 uv venv
 
 # Activar entorno virtual
 .venv\Scripts\Activate.ps1
 
 # Instalar MCP con CLI
-uv add "mcp[cli]"
+uv add mcp
 ```
 
 #### Linux/macOS
@@ -60,8 +60,8 @@ cd mi-servidor-mcp
 uv venv
 source .venv/bin/activate
 
-# Instalar MCP con CLI
-uv add "mcp[cli]"
+# Instalar MCP
+uv add mcp
 ```
 
 ### Opción 2: Usar pip (Tradicional)
@@ -85,7 +85,7 @@ python -m venv .venv
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 
 # Instalar MCP
-pip install "mcp[cli]"
+pip install mcp
 ```
 
 #### Linux/macOS
@@ -104,7 +104,7 @@ python3 -m venv .venv
 source .venv/bin/activate
 
 # Instalar MCP
-pip install "mcp[cli]"
+pip install mcp
 ```
 
 ### Verificar Instalación
@@ -119,8 +119,8 @@ pip show mcp
 
 **requirements.txt completo:**
 ```txt
-# MCP Core (versión mínima 1.2.0 para FastMCP)
-mcp[cli]>=1.2.0
+# MCP Core (con soporte para FastMCP desde v1.0.0+)
+mcp>=1.0.0
 
 # Async y utilidades
 aiofiles>=23.2.1

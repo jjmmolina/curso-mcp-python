@@ -3,6 +3,7 @@
 [![GitHub stars](https://img.shields.io/github/stars/jjmmolina/curso-mcp-python?style=social)](https://github.com/jjmmolina/curso-mcp-python)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
 ## 📚 Descripción del Curso
 
@@ -19,10 +20,10 @@ Bienvenido al curso **más completo en español** sobre **Model Context Protocol
 
 ## 🎯 Para Quién es Este Curso
 
-- Desarrolladores Python que quieren trabajar con IA
-- Profesionales que buscan crear herramientas para LLMs
-- Entusiastas de la IA que quieren extender capacidades de modelos
-- Estudiantes de ciencias de la computación
+- 👨‍💻 Desarrolladores Python que quieren trabajar con IA
+- 🏢 Profesionales que buscan crear herramientas para LLMs
+- 🤖 Entusiastas de la IA que quieren extender capacidades de modelos
+- 🎓 Estudiantes de ciencias de la computación
 
 ## 📋 Requisitos Previos
 
@@ -88,14 +89,18 @@ pip install -r requirements.txt
 
 Lee el módulo 1 y sigue la [Guía de Estudio](GUIA-ESTUDIO.md) de 4 semanas.
 
-## 📚 Recursos Adicionales
+## 📚 Documentación Completa
 
-- 📖 [FAQ - Preguntas Frecuentes](FAQ.md)
-- 📅 [Guía de Estudio de 4 Semanas](GUIA-ESTUDIO.md)
-- 💻 [Ejemplos de Código](ejemplos/)
-- 🤝 [Guía de Contribución](CONTRIBUTING.md)
-- 🌐 [Documentación oficial de MCP](https://modelcontextprotocol.io/)
-- 📦 [MCP Python SDK](https://github.com/modelcontextprotocol/python-sdk)
+| Documento | Descripción |
+|-----------|-------------|
+| 📖 [FAQ](FAQ.md) | Preguntas frecuentes |
+| 📅 [Guía de Estudio](GUIA-ESTUDIO.md) | Plan de 4 semanas |
+| 🗺️ [Roadmap](ROADMAP.md) | Planes futuros del curso |
+| 📝 [Changelog](CHANGELOG.md) | Historial de cambios |
+| 🔧 [Setup](SETUP.md) | Configuración del repositorio |
+| 📚 [Recursos](RECURSOS.md) | Enlaces y referencias útiles |
+| 🤝 [Contribuir](CONTRIBUTING.md) | Guía de contribución |
+| 💻 [Ejemplos](ejemplos/) | Código de ejemplo |
 
 ## 🛠️ Ejemplos Prácticos
 
@@ -126,7 +131,7 @@ Ver [requirements.txt](requirements.txt) para la lista completa.
 | 3 | Características Avanzadas (Módulo 3) | 10-12 |
 | 4 | Proyecto Final (Módulo 4) | 15-20 |
 
-**Total**: ~45-57 horas
+**Total**: ~45-57 horas | **Nivel**: Principiante a Intermedio
 
 ## 🤝 Contribuciones
 
@@ -134,11 +139,12 @@ Ver [requirements.txt](requirements.txt) para la lista completa.
 
 ### Formas de Contribuir
 
-- 🐛 Reportar bugs
+- 🐛 Reportar bugs usando [Issues](https://github.com/jjmmolina/curso-mcp-python/issues)
 - 💡 Sugerir nuevas lecciones
 - 📝 Mejorar documentación
 - 🌍 Traducir contenido
 - ⭐ Dar una estrella al repo
+- 🔀 Enviar Pull Requests
 
 ## 📝 Licencia
 
@@ -148,14 +154,45 @@ Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) par
 
 **Jesus Martínez** - [@jjmmolina](https://github.com/jjmmolina)
 
+- 🏢 Full On Net
+- 📍 Abarán, Murcia, España
+- 📧 Email: e.gvpjjmm.cdo@telefonica.com
+
 ## 🙏 Agradecimientos
 
 - [Anthropic](https://www.anthropic.com/) por crear MCP
 - La comunidad de MCP por los ejemplos y feedback
 - Todos los contribuidores de este curso
 
+## 📞 Contacto y Soporte
+
+- 🐛 Reportar bugs: [GitHub Issues](https://github.com/jjmmolina/curso-mcp-python/issues)
+- 💬 Preguntas: [GitHub Discussions](https://github.com/jjmmolina/curso-mcp-python/discussions)
+- 📧 Email: e.gvpjjmm.cdo@telefonica.com
+
+## 🌟 Apoya el Proyecto
+
+Si este curso te está siendo útil:
+
+1. ⭐ **Dale una estrella** al repositorio
+2. 🔄 **Compártelo** con otros desarrolladores
+3. 🤝 **Contribuye** con mejoras o nuevas lecciones
+4. 📣 **Cuéntanos** tu experiencia en las Discussions
+5. ☕ **Invita un café** (opcional) - [Ko-fi](https://ko-fi.com/) (próximamente)
+
 ---
 
 **¡Comencemos a aprender MCP en Python! 🚀✨**
 
-[Empezar Curso](modulo1/leccion1-introduccion.md) | [Guía de Estudio](GUIA-ESTUDIO.md) | [FAQ](FAQ.md)
+[▶️ Empezar Curso](modulo1/leccion1-introduccion.md) | [📅 Guía de Estudio](GUIA-ESTUDIO.md) | [❓ FAQ](FAQ.md) | [🗺️ Roadmap](ROADMAP.md)
+
+---
+
+<div align="center">
+  
+**Hecho con ❤️ por la comunidad Python**
+
+[![GitHub followers](https://img.shields.io/github/followers/jjmmolina?style=social)](https://github.com/jjmmolina)
+[![Twitter Follow](https://img.shields.io/twitter/follow/jjmmolina?style=social)](https://twitter.com/jjmmolina)
+
+</div>

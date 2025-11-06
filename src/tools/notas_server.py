@@ -10,7 +10,7 @@ from typing import List, Optional
 from pydantic import BaseModel, Field
 from mcp.server import Server
 from mcp.server.stdio import stdio_server
-from mcp.types import Tool, TextContent, McpError
+from mcp.types import Tool, TextContent
 import logging
 
 logging.basicConfig(level=logging.INFO)
@@ -105,6 +105,7 @@ async def list_tools() -> List[Tool]:
 
 @server.call_tool()
 async def call_tool(name: str, arguments: dict) -> List[TextContent]:
+    """Ejecuta la herramienta solicitada"""
     try:
         if name == "crear_nota":
             return await crear_nota(arguments)
@@ -114,14 +115,15 @@ async def call_tool(name: str, arguments: dict) -> List[TextContent]:
             return await buscar_notas(arguments)
         if name == "eliminar_nota":
             return await eliminar_nota(arguments)
-        raise McpError(code=-32601, message=f"Herramienta no encontrada: {name}")
-    except McpError:
-        raise
+        # Herramienta no encontrada
+        logger.error(f"Herramienta no encontrada: {name}")
+        return [TextContent(type="text", text=f"❌ Error: Herramienta no encontrada: {name}")]
     except ValueError as e:
-        raise McpError(code=-32602, message=str(e))
+        logger.error(f"Error de validación en {name}: {e}")
+        return [TextContent(type="text", text=f"❌ Error de validación: {str(e)}")]
     except Exception as e:
         logger.error(f"Error en {name}: {e}", exc_info=True)
-        raise McpError(code=-32603, message="Error interno del servidor")
+        return [TextContent(type="text", text=f"❌ Error interno del servidor: {str(e)}")]
 
 async def crear_nota(arguments: dict) -> List[TextContent]:
     args = CrearNotaArgs(**arguments)

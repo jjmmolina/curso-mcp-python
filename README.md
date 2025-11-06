@@ -1,5 +1,6 @@
 # Curso: Model Context Protocol (MCP) en Python
 
+![CI](https://github.com/jjmmolina/curso-mcp-python/actions/workflows/ci.yml/badge.svg)
 ![License](https://img.shields.io/badge/license-MIT-blue.svg) ![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB) ![Status](https://img.shields.io/badge/status-Activo-brightgreen)
 
 ## 📚 Descripción del Curso

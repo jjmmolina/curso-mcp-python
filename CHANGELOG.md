@@ -75,6 +75,9 @@ y este proyecto adhiere a [Semantic Versioning](https://semver.org/lang/es/).
 ### 🧹 Corregido
 - Enlaces de navegación y consistencia en Módulo 4
 
+### 🤖 Infraestructura
+- CI inicial con GitHub Actions: lint (ruff) + tests (pytest)
+
 ## [Unreleased]
 
 ### 🔜 Planeado

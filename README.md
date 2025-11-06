@@ -1,11 +1,18 @@
 # Curso: Model Context Protocol (MCP) en Python
 
 ![CI](https://github.com/jjmmolina/curso-mcp-python/actions/workflows/ci.yml/badge.svg)
-![License](https://img.shields.io/badge/license-MIT-blue.svg) ![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB) ![Status](https://img.shields.io/badge/status-Activo-brightgreen)
+![License](https://img.shields.io/badge/license-MIT-blue.svg) ![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB) ![MCP](https://img.shields.io/badge/MCP-1.2%2B-orange) ![Status](https://img.shields.io/badge/status-Activo-brightgreen)
 
 ## 📚 Descripción del Curso
 
 Bienvenido al curso completo sobre **Model Context Protocol (MCP)** en Python. Este curso te enseñará desde los fundamentos hasta la implementación avanzada de servidores MCP, permitiéndote crear herramientas que extienden las capacidades de los asistentes de IA como Claude y GitHub Copilot.
+
+**✨ Actualizado con las últimas prácticas oficiales de MCP**, incluyendo:
+- 🚀 FastMCP para desarrollo simplificado
+- 📋 Uso de `uv` como gestor de paquetes moderno
+- ⚠️ Mejores prácticas de logging para servidores STDIO
+- 🏗️ Terminología oficial (MCP Host, Client, Server)
+- 🔄 Arquitectura interna y negociación de capacidades
 
 ## 🎯 Objetivos del Curso
 
@@ -67,15 +74,52 @@ Bienvenido al curso completo sobre **Model Context Protocol (MCP)** en Python. E
 
 ## 📦 Instalación
 
+### Opción 1: Con `uv` (Recomendado)
+
+`uv` es un gestor de paquetes moderno y extremadamente rápido para Python:
+
 ```bash
+# Instalar uv
+# Windows (PowerShell)
+powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+
+# Linux/macOS
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Reiniciar el terminal después de la instalación
+
+# Clonar el repositorio
+git clone https://github.com/jjmmolina/curso-mcp-python.git
+cd curso-mcp-python
+
 # Crear entorno virtual
-python -m venv venv
+uv venv
 
 # Activar entorno virtual (Windows)
-venv\Scripts\activate
+.venv\Scripts\Activate.ps1
 
 # Activar entorno virtual (Linux/Mac)
-source venv/bin/activate
+source .venv/bin/activate
+
+# Instalar dependencias
+uv pip install -r requirements.txt
+```
+
+### Opción 2: Con pip tradicional
+
+```bash
+# Clonar el repositorio
+git clone https://github.com/jjmmolina/curso-mcp-python.git
+cd curso-mcp-python
+
+# Crear entorno virtual
+python -m venv .venv
+
+# Activar entorno virtual (Windows)
+.venv\Scripts\activate
+
+# Activar entorno virtual (Linux/Mac)
+source .venv/bin/activate
 
 # Instalar dependencias
 pip install -r requirements.txt

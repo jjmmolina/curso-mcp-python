@@ -1,25 +1,38 @@
 # Roadmap del Curso MCP en Python
 
-## 🎯 Versión Actual: 1.1.0
+## 🎯 Versión Actual: 1.2.0
 
 ### ✅ Completado
-- [x] Módulo 1: Introducción a MCP (3 lecciones)
-- [x] Módulo 2: Primeros Pasos (3 lecciones)
+- [x] Módulo 1: Introducción a MCP (3 lecciones) - **Actualizado con prácticas oficiales**
+- [x] Módulo 2: Primeros Pasos (3 lecciones) - **Actualizado con FastMCP**
+- [x] Módulo 3: Características Avanzadas (3 lecciones)
 - [x] Ejemplos básicos (Calculadora, Notas)
 - [x] Documentación completa (README, FAQ, Guía de Estudio)
 - [x] Configuración de proyecto (requirements, .gitignore)
 - [x] Licencia MIT y guía de contribución
- - [x] Módulo 3: Características Avanzadas (3 lecciones)
- - [x] Plantillas de proyectos del Módulo 4
- - [x] Ejemplos ejecutables en `src/`
+- [x] Plantillas de proyectos del Módulo 4
+- [x] Ejemplos ejecutables en `src/`
+- [x] **FastMCP**: Integración y ejemplos
+- [x] **Guía de `uv`**: Gestor de paquetes moderno
+- [x] **Advertencias de logging**: Mejores prácticas para STDIO
+- [x] **Terminología oficial**: MCP Host, Client, Server
+- [x] **Arquitectura interna**: Flujo del servidor y negociación de capacidades
+- [x] CI/CD básico con GitHub Actions (ruff + pytest)
 
 ## 🚧 En Progreso
 
-### Versión 1.2.0 (Diciembre 2025)
+### Versión 1.3.0 (Diciembre 2025)
+- [ ] **Actualización de ejemplos en src/**:
+  - [ ] Migrar `notas_server.py` a FastMCP
+  - [ ] Migrar `code_prompts_server.py` a FastMCP
+  - [ ] Añadir logging correcto en todos los ejemplos
 - [ ] **Ejemplos Adicionales**:
-  - [ ] Conversor de Unidades
+  - [ ] Conversor de Unidades con FastMCP
   - [ ] Generador de Contraseñas
-  - [ ] Lista de Tareas (TODO)
+  - [ ] Lista de Tareas (TODO) con persistencia
+- [ ] **Documentación de Capacidades**:
+  - [ ] Guía detallada sobre capability negotiation
+  - [ ] Ejemplos de notificaciones en tiempo real
 
 ### Versión 1.3.0 (Enero 2026)
 - [ ] **Proyectos Módulo 4**:

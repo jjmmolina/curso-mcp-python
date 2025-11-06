@@ -18,25 +18,74 @@ python --version
 
 ## Instalación Paso a Paso
 
-### 1. Crear un Entorno Virtual
+MCP recomienda usar **`uv`**, un gestor de paquetes moderno y rápido para Python, aunque también puedes usar `pip` tradicional.
+
+### Opción 1: Usar `uv` (Recomendado)
+
+`uv` es significativamente más rápido que pip y simplifica la gestión de entornos.
+
+#### Windows (PowerShell)
+```powershell
+# Instalar uv
+powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+
+# Reiniciar el terminal para que uv esté disponible
+
+# Crear proyecto
+uv init mi-servidor-mcp
+cd mi-servidor-mcp
+
+# Crear entorno virtual
+uv venv
+
+# Activar entorno virtual
+.venv\Scripts\Activate.ps1
+
+# Instalar MCP con CLI
+uv add "mcp[cli]"
+```
+
+#### Linux/macOS
+```bash
+# Instalar uv
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Reiniciar el terminal
+
+# Crear proyecto
+uv init mi-servidor-mcp
+cd mi-servidor-mcp
+
+# Crear entorno virtual y activarlo
+uv venv
+source .venv/bin/activate
+
+# Instalar MCP con CLI
+uv add "mcp[cli]"
+```
+
+### Opción 2: Usar pip (Tradicional)
 
 #### Windows (PowerShell)
 ```powershell
 # Navegar a tu carpeta de proyectos
 cd C:\mis-proyectos
 
-# Crear el directorio del curso
-mkdir curso-mcp
-cd curso-mcp
+# Crear el directorio del proyecto
+mkdir mi-servidor-mcp
+cd mi-servidor-mcp
 
 # Crear entorno virtual
-python -m venv venv
+python -m venv .venv
 
 # Activar entorno virtual
-.\venv\Scripts\Activate.ps1
+.venv\Scripts\Activate.ps1
 
 # Si hay error de permisos, ejecutar:
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+
+# Instalar MCP
+pip install "mcp[cli]"
 ```
 
 #### Linux/macOS
@@ -44,40 +93,34 @@ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 # Navegar a tu carpeta de proyectos
 cd ~/proyectos
 
-# Crear el directorio del curso
-mkdir curso-mcp
-cd curso-mcp
+# Crear el directorio del proyecto
+mkdir mi-servidor-mcp
+cd mi-servidor-mcp
 
 # Crear entorno virtual
-python3 -m venv venv
+python3 -m venv .venv
 
 # Activar entorno virtual
-source venv/bin/activate
+source .venv/bin/activate
+
+# Instalar MCP
+pip install "mcp[cli]"
 ```
 
-### 2. Instalar MCP SDK
+### Verificar Instalación
 
 ```bash
-# Instalar el SDK de MCP
-pip install mcp
+# Con uv
+uv pip show mcp
 
-# Verificar instalación
+# Con pip
 pip show mcp
-```
-
-### 3. Instalar Dependencias Adicionales
-
-```bash
-# Crear archivo requirements.txt
-# (o usar el del repositorio del curso)
-
-pip install -r requirements.txt
 ```
 
 **requirements.txt completo:**
 ```txt
-# MCP Core
-mcp>=0.9.0
+# MCP Core (versión mínima 1.2.0 para FastMCP)
+mcp[cli]>=1.2.0
 
 # Async y utilidades
 aiofiles>=23.2.1
@@ -94,13 +137,67 @@ typing-extensions>=4.8.0
 sqlalchemy>=2.0.0
 aiosqlite>=0.19.0
 
+# Seguridad (opcional)
+bleach>=6.0.0
+cryptography>=41.0.0
+
 # Testing
 pytest>=7.4.0
 pytest-asyncio>=0.21.0
 
-# Logging
-loguru>=0.7.0
+# Linting
+ruff>=0.1.0
 ```
+
+### Instalar Dependencias
+
+```bash
+# Con uv (recomendado)
+uv pip install -r requirements.txt
+
+# Con pip
+pip install -r requirements.txt
+```
+
+## ⚠️ Advertencia Crítica sobre Logging en Servidores STDIO
+
+**NUNCA escribas a stdout (salida estándar) en servidores que usen transporte STDIO.** Esto corromperá los mensajes JSON-RPC y romperá tu servidor.
+
+### ❌ **MALO** (Corrompe el servidor STDIO)
+```python
+# Estos comandos NO DEBEN USARSE en servidores STDIO:
+print("Processing request")           # ❌ Python
+console.log("Processing request")     # ❌ JavaScript
+fmt.Println("Processing request")     # ❌ Go
+System.out.println("...")             # ❌ Java
+```
+
+### ✅ **BUENO** (Escribe a stderr o archivos)
+```python
+import logging
+
+# Configurar logging para escribir a stderr (no stdout)
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.StreamHandler()  # Por defecto usa stderr, ¡NO stdout!
+    ]
+)
+
+logger = logging.getLogger(__name__)
+
+# Ahora puedes usar logging de forma segura
+logger.info("Processing request")
+logger.error("Something went wrong")
+logger.debug("Debug info")
+```
+
+### Para Servidores HTTP/SSE
+
+Si usas transporte HTTP en lugar de STDIO, **SÍ puedes usar** `print()` sin problemas, ya que no interfiere con las respuestas HTTP.
+
+**Regla de oro**: Si tu servidor usa `stdio_server()`, NUNCA uses `print()`. Usa siempre `logging`.
 
 ## Configuración de Editores
 
@@ -333,12 +430,41 @@ API_KEY=tu_api_key_aqui
 
 ## Verificación de Instalación
 
-### Crear un servidor de prueba
+### Opción 1: Servidor Simple con FastMCP (Recomendado)
 
 ```python
-# src/test_install.py
+# test_install.py
+from mcp.server.fastmcp import FastMCP
+import logging
+
+# Configurar logging (NO USAR print() en servidores STDIO)
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+# Crear servidor
+mcp = FastMCP("test-server")
+
+@mcp.tool()
+async def test() -> str:
+    """Herramienta de prueba para verificar la instalación."""
+    logger.info("Tool 'test' ejecutada correctamente")
+    return "✅ Instalación correcta con FastMCP!"
+
+if __name__ == "__main__":
+    logger.info("Iniciando servidor de prueba...")
+    mcp.run(transport='stdio')
+```
+
+### Opción 2: Servidor con SDK Base
+
+```python
+# test_install_base.py
 from mcp.server import Server
 from mcp.types import Tool, TextContent
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 server = Server("test-server")
 
@@ -357,13 +483,15 @@ async def list_tools():
 
 @server.call_tool()
 async def call_tool(name: str, arguments: dict):
-    return [TextContent(type="text", text="✅ Instalación correcta!")]
+    logger.info(f"Ejecutando tool: {name}")
+    return [TextContent(type="text", text="✅ Instalación correcta con SDK base!")]
 
 if __name__ == "__main__":
     import asyncio
     from mcp.server.stdio import stdio_server
     
     async def main():
+        logger.info("Iniciando servidor de prueba...")
         async with stdio_server() as (read_stream, write_stream):
             await server.run(
                 read_stream,
@@ -377,10 +505,19 @@ if __name__ == "__main__":
 ### Ejecutar el test
 
 ```bash
-python src/test_install.py
+# Con uv
+uv run test_install.py
+
+# Con Python directo
+python test_install.py
 ```
 
-Si todo está bien configurado, el servidor debe iniciarse sin errores.
+Si todo está bien configurado, deberías ver en **stderr** (no stdout):
+```
+INFO:__main__:Iniciando servidor de prueba...
+```
+
+Y el servidor esperará mensajes JSON-RPC en stdin.
 
 ## Solución de Problemas Comunes
 

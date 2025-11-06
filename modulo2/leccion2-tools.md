@@ -2,56 +2,77 @@
 
 ## Introducción
 
-Las **herramientas (tools)** son el corazón de un servidor MCP. Permiten que los modelos de IA ejecuten acciones específicas. En esta lección aprenderemos a crear herramientas robustas y útiles.
+Las **herramientas (tools)** son el corazón de un servidor MCP. Permiten que los modelos de IA ejecuten acciones específicas. En esta lección aprenderemos a crear herramientas robustas usando **FastMCP** y el **SDK base**.
+
+## ⚠️ Regla Crítica de Logging
+
+**NUNCA uses `print()` en servidores con transporte STDIO**. Esto corrompe la comunicación JSON-RPC.
+
+```python
+# ❌ MALO - Rompe el servidor STDIO
+print("Processing request")
+
+# ✅ BUENO - Usa logging
+import logging
+logger = logging.getLogger(__name__)
+logger.info("Processing request")
+```
 
 ## Tipos de Herramientas
 
-### 1. Herramientas de Lectura
+### 1. Herramientas de Lectura (Read-only)
 ```python
-@server.call_tool()
-async def call_tool(name: str, arguments: dict):
-    if name == "obtener_clima":
-        # Solo lectura, sin efectos secundarios
-        return datos_clima
+@mcp.tool()
+async def obtener_clima(ciudad: str) -> str:
+    """Obtiene el clima actual de una ciudad."""
+    # Solo lectura, sin efectos secundarios
+    return f"Clima en {ciudad}: Soleado, 22°C"
 ```
 
-### 2. Herramientas de Escritura
+### 2. Herramientas de Escritura (Write)
 ```python
-if name == "guardar_nota":
+@mcp.tool()
+async def guardar_nota(titulo: str, contenido: str) -> str:
+    """Guarda una nueva nota."""
     # Modifica datos
-    await guardar_en_bd(nota)
+    await save_to_db(titulo, contenido)
+    return "Nota guardada exitosamente"
 ```
 
-### 3. Herramientas de Acción
+### 3. Herramientas de Acción (Actions)
 ```python
-if name == "enviar_email":
+@mcp.tool()
+async def enviar_email(destinatario: str, asunto: str, mensaje: str) -> str:
+    """Envía un email."""
     # Ejecuta una acción
-    await enviar_correo(destinatario, mensaje)
+    await send_email(destinatario, asunto, mensaje)
+    return "Email enviado"
 ```
 
-## Ejemplo Completo: Sistema de Notas
+## Ejemplo Completo con FastMCP: Sistema de Notas
 
 ```python
-# src/tools/notas_server.py
+# notas_server_fast.py
 """
-Servidor MCP para gestión de notas
+Servidor MCP para gestión de notas usando FastMCP
 """
 
-import asyncio
 import json
+import logging
 from pathlib import Path
 from datetime import datetime
 from typing import List, Optional
 from pydantic import BaseModel, Field
-from mcp.server import Server
-from mcp.server.stdio import stdio_server
-from mcp.types import Tool, TextContent, McpError
-import logging
+from mcp.server.fastmcp import FastMCP
 
-logging.basicConfig(level=logging.INFO)
+# Configurar logging (NO usar print())
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
 logger = logging.getLogger(__name__)
 
-# Modelos de datos
+# Modelos de datos con Pydantic
 class Nota(BaseModel):
     id: str
     titulo: str
@@ -59,18 +80,7 @@ class Nota(BaseModel):
     fecha_creacion: str
     etiquetas: List[str] = []
 
-class CrearNotaArgs(BaseModel):
-    titulo: str = Field(..., min_length=1, max_length=100)
-    contenido: str = Field(..., min_length=1)
-    etiquetas: Optional[List[str]] = []
-
-class BuscarNotasArgs(BaseModel):
-    termino: str = Field(..., min_length=1)
-
-class EliminarNotaArgs(BaseModel):
-    id: str
-
-# Almacenamiento (en un proyecto real, usar base de datos)
+# Almacenamiento
 NOTAS_FILE = Path("data/notas.json")
 NOTAS_FILE.parent.mkdir(exist_ok=True)
 
@@ -97,109 +107,23 @@ def guardar_notas(notas: List[Nota]):
         logger.error(f"Error guardando notas: {e}")
         raise
 
-# Crear servidor
-server = Server("notas-mcp")
+# Crear servidor FastMCP
+mcp = FastMCP("notas-mcp")
 
-@server.list_tools()
-async def list_tools() -> List[Tool]:
-    """Lista todas las herramientas disponibles"""
-    return [
-        Tool(
-            name="crear_nota",
-            description="Crea una nueva nota con título, contenido y etiquetas opcionales",
-            inputSchema={
-                "type": "object",
-                "properties": {
-                    "titulo": {
-                        "type": "string",
-                        "description": "Título de la nota (máx. 100 caracteres)",
-                        "minLength": 1,
-                        "maxLength": 100
-                    },
-                    "contenido": {
-                        "type": "string",
-                        "description": "Contenido de la nota",
-                        "minLength": 1
-                    },
-                    "etiquetas": {
-                        "type": "array",
-                        "description": "Lista de etiquetas para organizar la nota",
-                        "items": {"type": "string"},
-                        "default": []
-                    }
-                },
-                "required": ["titulo", "contenido"]
-            }
-        ),
-        Tool(
-            name="listar_notas",
-            description="Lista todas las notas guardadas",
-            inputSchema={
-                "type": "object",
-                "properties": {}
-            }
-        ),
-        Tool(
-            name="buscar_notas",
-            description="Busca notas por término en título o contenido",
-            inputSchema={
-                "type": "object",
-                "properties": {
-                    "termino": {
-                        "type": "string",
-                        "description": "Término a buscar",
-                        "minLength": 1
-                    }
-                },
-                "required": ["termino"]
-            }
-        ),
-        Tool(
-            name="eliminar_nota",
-            description="Elimina una nota por su ID",
-            inputSchema={
-                "type": "object",
-                "properties": {
-                    "id": {
-                        "type": "string",
-                        "description": "ID de la nota a eliminar"
-                    }
-                },
-                "required": ["id"]
-            }
-        )
-    ]
-
-@server.call_tool()
-async def call_tool(name: str, arguments: dict) -> List[TextContent]:
-    """Ejecuta la herramienta solicitada"""
+@mcp.tool()
+async def crear_nota(
+    titulo: str,
+    contenido: str,
+    etiquetas: Optional[List[str]] = None
+) -> str:
+    """Crea una nueva nota con título, contenido y etiquetas opcionales.
     
-    try:
-        if name == "crear_nota":
-            return await crear_nota(arguments)
-        elif name == "listar_notas":
-            return await listar_notas()
-        elif name == "buscar_notas":
-            return await buscar_notas(arguments)
-        elif name == "eliminar_nota":
-            return await eliminar_nota(arguments)
-        else:
-            raise McpError(
-                code=-32601,
-                message=f"Herramienta no encontrada: {name}"
-            )
-    
-    except McpError:
-        raise
-    except ValueError as e:
-        raise McpError(code=-32602, message=str(e))
-    except Exception as e:
-        logger.error(f"Error en {name}: {e}", exc_info=True)
-        raise McpError(code=-32603, message="Error interno del servidor")
-
-async def crear_nota(arguments: dict) -> List[TextContent]:
-    """Crea una nueva nota"""
-    args = CrearNotaArgs(**arguments)
+    Args:
+        titulo: Título de la nota (máx. 100 caracteres)
+        contenido: Contenido de la nota
+        etiquetas: Lista opcional de etiquetas para organizar la nota
+    """
+    logger.info(f"Creando nota: {titulo}")
     
     # Cargar notas existentes
     notas = cargar_notas()
@@ -207,35 +131,31 @@ async def crear_nota(arguments: dict) -> List[TextContent]:
     # Crear nueva nota
     nueva_nota = Nota(
         id=f"nota_{datetime.now().timestamp()}",
-        titulo=args.titulo,
-        contenido=args.contenido,
+        titulo=titulo[:100],  # Limitar longitud
+        contenido=contenido,
         fecha_creacion=datetime.now().isoformat(),
-        etiquetas=args.etiquetas or []
+        etiquetas=etiquetas or []
     )
     
     # Agregar y guardar
     notas.append(nueva_nota)
     guardar_notas(notas)
     
-    logger.info(f"Nota creada: {nueva_nota.id}")
-    
-    return [TextContent(
-        type="text",
-        text=f"✅ Nota creada exitosamente!\n\n"
-             f"ID: {nueva_nota.id}\n"
-             f"Título: {nueva_nota.titulo}\n"
-             f"Etiquetas: {', '.join(nueva_nota.etiquetas) if nueva_nota.etiquetas else 'Ninguna'}"
-    )]
+    return (
+        f"✅ Nota creada exitosamente!\n\n"
+        f"ID: {nueva_nota.id}\n"
+        f"Título: {nueva_nota.titulo}\n"
+        f"Etiquetas: {', '.join(nueva_nota.etiquetas) if nueva_nota.etiquetas else 'Ninguna'}"
+    )
 
-async def listar_notas() -> List[TextContent]:
-    """Lista todas las notas"""
+@mcp.tool()
+async def listar_notas() -> str:
+    """Lista todas las notas guardadas."""
+    logger.info("Listando todas las notas")
     notas = cargar_notas()
     
     if not notas:
-        return [TextContent(
-            type="text",
-            text="📝 No hay notas guardadas."
-        )]
+        return "📝 No hay notas guardadas."
     
     # Formatear lista de notas
     resultado = f"📝 Tienes {len(notas)} nota(s):\n\n"
@@ -247,14 +167,19 @@ async def listar_notas() -> List[TextContent]:
         resultado += f"  Creada: {nota.fecha_creacion}\n"
         resultado += f"  {nota.contenido[:100]}{'...' if len(nota.contenido) > 100 else ''}\n\n"
     
-    return [TextContent(type="text", text=resultado)]
+    return resultado
 
-async def buscar_notas(arguments: dict) -> List[TextContent]:
-    """Busca notas por término"""
-    args = BuscarNotasArgs(**arguments)
+@mcp.tool()
+async def buscar_notas(termino: str) -> str:
+    """Busca notas por término en título o contenido.
+    
+    Args:
+        termino: Término a buscar en las notas
+    """
+    logger.info(f"Buscando notas con término: {termino}")
     notas = cargar_notas()
     
-    termino_lower = args.termino.lower()
+    termino_lower = termino.lower()
     
     # Buscar en título y contenido
     encontradas = [
@@ -264,165 +189,170 @@ async def buscar_notas(arguments: dict) -> List[TextContent]:
     ]
     
     if not encontradas:
-        return [TextContent(
-            type="text",
-            text=f"🔍 No se encontraron notas con el término '{args.termino}'."
-        )]
+        return f"🔍 No se encontraron notas con el término '{termino}'."
     
-    resultado = f"🔍 Se encontraron {len(encontradas)} nota(s) con '{args.termino}':\n\n"
+    resultado = f"🔍 Se encontraron {len(encontradas)} nota(s) con '{termino}':\n\n"
     
     for nota in encontradas:
         resultado += f"• {nota.titulo}\n"
         resultado += f"  ID: {nota.id}\n"
         resultado += f"  {nota.contenido[:150]}{'...' if len(nota.contenido) > 150 else ''}\n\n"
     
-    return [TextContent(type="text", text=resultado)]
+    return resultado
 
-async def eliminar_nota(arguments: dict) -> List[TextContent]:
-    """Elimina una nota por ID"""
-    args = EliminarNotaArgs(**arguments)
+@mcp.tool()
+async def eliminar_nota(id: str) -> str:
+    """Elimina una nota por su ID.
+    
+    Args:
+        id: ID de la nota a eliminar
+    """
+    logger.info(f"Eliminando nota: {id}")
     notas = cargar_notas()
     
     # Buscar y eliminar
-    notas_filtradas = [nota for nota in notas if nota.id != args.id]
+    notas_filtradas = [nota for nota in notas if nota.id != id]
     
     if len(notas_filtradas) == len(notas):
-        return [TextContent(
-            type="text",
-            text=f"❌ No se encontró una nota con ID: {args.id}"
-        )]
+        return f"❌ No se encontró una nota con ID: {id}"
     
     guardar_notas(notas_filtradas)
-    logger.info(f"Nota eliminada: {args.id}")
     
-    return [TextContent(
-        type="text",
-        text=f"🗑️ Nota eliminada exitosamente (ID: {args.id})"
-    )]
-
-async def main():
-    """Punto de entrada del servidor"""
-    logger.info("Iniciando servidor de notas MCP...")
-    async with stdio_server() as (read_stream, write_stream):
-        await server.run(
-            read_stream,
-            write_stream,
-            server.create_initialization_options()
-        )
+    return f"🗑️ Nota eliminada exitosamente (ID: {id})"
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    logger.info("Iniciando servidor de notas MCP...")
+    mcp.run(transport='stdio')
 ```
 
 ## Mejores Prácticas para Tools
 
-### 1. Nombres Descriptivos
+### 1. Nombres de Tools (Siguiendo la Especificación)
+
+Los nombres de herramientas deben seguir el formato especificado en la documentación oficial de MCP:
 
 ```python
-# ❌ Malo
-Tool(name="fn1", description="hace algo")
+# ✅ BUENO - Nombres claros y descriptivos
+@mcp.tool()
+async def calcular_impuesto(monto: float, tasa: float) -> str:
+    """Calcula el impuesto sobre ventas para un monto dado."""
+    ...
 
-# ✅ Bueno
-Tool(
-    name="calcular_impuesto",
-    description="Calcula el impuesto sobre ventas para un monto dado"
-)
+# ✅ BUENO - Usa snake_case
+@mcp.tool()
+async def convertir_moneda(cantidad: float, de: str, a: str) -> str:
+    """Convierte una cantidad de una moneda a otra."""
+    ...
+
+# ❌ MALO - Nombres vagos o genéricos
+@mcp.tool()
+async def fn1(x: int) -> str:
+    """hace algo"""
+    ...
 ```
 
-### 2. Descripciones Claras
+### 2. Descripciones Claras y Detalladas
+
+El LLM usa las descripciones para decidir qué tool usar. Sé específico:
 
 ```python
-Tool(
-    name="convertir_moneda",
-    description="Convierte una cantidad de una moneda a otra usando tasas de cambio actuales. "
-                "Soporta USD, EUR, GBP, JPY. Requiere conexión a internet."
-)
-```
-
-### 3. Schemas Bien Definidos
-
-```python
-inputSchema={
-    "type": "object",
-    "properties": {
-        "cantidad": {
-            "type": "number",
-            "description": "Cantidad a convertir (debe ser positiva)",
-            "minimum": 0
-        },
-        "de": {
-            "type": "string",
-            "description": "Moneda origen",
-            "enum": ["USD", "EUR", "GBP", "JPY"]
-        },
-        "a": {
-            "type": "string",
-            "description": "Moneda destino",
-            "enum": ["USD", "EUR", "GBP", "JPY"]
-        }
-    },
-    "required": ["cantidad", "de", "a"]
-}
-```
-
-### 4. Validación con Pydantic
-
-```python
-from pydantic import BaseModel, Field, validator
-
-class ConvertirMonedaArgs(BaseModel):
-    cantidad: float = Field(gt=0, description="Cantidad positiva")
-    de: str = Field(..., regex="^(USD|EUR|GBP|JPY)$")
-    a: str = Field(..., regex="^(USD|EUR|GBP|JPY)$")
+# ✅ BUENO
+@mcp.tool()
+async def convertir_moneda(cantidad: float, de: str, a: str) -> str:
+    """Convierte una cantidad de una moneda a otra usando tasas de cambio actuales.
     
-    @validator('a')
-    def monedas_diferentes(cls, v, values):
-        if 'de' in values and v == values['de']:
-            raise ValueError('Las monedas deben ser diferentes')
-        return v
+    Soporta USD, EUR, GBP, JPY. Requiere conexión a internet para obtener
+    tasas actualizadas.
+    
+    Args:
+        cantidad: Cantidad a convertir (debe ser positiva)
+        de: Código de moneda origen (USD, EUR, GBP, JPY)
+        a: Código de moneda destino (USD, EUR, GBP, JPY)
+    """
+    ...
+
+# ❌ MALO
+@mcp.tool()
+async def convertir_moneda(cantidad: float, de: str, a: str) -> str:
+    """Convierte moneda."""
+    ...
+```
+
+### 3. Validación con Type Hints y Pydantic
+
+FastMCP usa type hints, pero puedes añadir validación adicional:
+
+```python
+from pydantic import Field, field_validator
+
+@mcp.tool()
+async def transferir_dinero(
+    monto: float = Field(gt=0, description="Monto a transferir (debe ser positivo)"),
+    origen: str = Field(pattern="^[0-9]{10}$", description="Cuenta origen (10 dígitos)"),
+    destino: str = Field(pattern="^[0-9]{10}$", description="Cuenta destino (10 dígitos)")
+) -> str:
+    """Transfiere dinero entre cuentas bancarias."""
+    if origen == destino:
+        return "❌ Error: Las cuentas deben ser diferentes"
+    
+    # Lógica de transferencia
+    return f"✅ Transferencia de ${monto} completada"
+```
+
+### 4. NUNCA usar print() en Servidores STDIO
+
+```python
+# ❌ MALO - Rompe el servidor STDIO
+@mcp.tool()
+async def procesar_datos(data: str) -> str:
+    print(f"Processing {data}")  # ¡ESTO CORROMPE JSON-RPC!
+    return "Done"
+
+# ✅ BUENO - Usa logging
+import logging
+logger = logging.getLogger(__name__)
+
+@mcp.tool()
+async def procesar_datos(data: str) -> str:
+    logger.info(f"Processing {data}")  # Escribe a stderr, no stdout
+    return "Done"
 ```
 
 ### 5. Manejo de Errores Específico
 
 ```python
-@server.call_tool()
-async def call_tool(name: str, arguments: dict):
-    try:
-        if name == "dividir":
-            a = arguments["a"]
-            b = arguments["b"]
-            
-            if b == 0:
-                return [TextContent(
-                    type="text",
-                    text="❌ Error: No se puede dividir por cero"
-                )]
-            
-            resultado = a / b
-            return [TextContent(
-                type="text",
-                text=f"{a} ÷ {b} = {resultado}"
-            )]
+@mcp.tool()
+async def dividir(a: float, b: float) -> str:
+    """Divide dos números.
     
-    except KeyError as e:
-        raise McpError(
-            code=-32602,
-            message=f"Parámetro faltante: {e}"
-        )
+    Args:
+        a: Dividendo
+        b: Divisor (no puede ser cero)
+    """
+    if b == 0:
+        return "❌ Error: No se puede dividir por cero"
+    
+    resultado = a / b
+    return f"{a} ÷ {b} = {resultado}"
 ```
 
-### 6. Respuestas Formateadas
+### 6. Respuestas Formateadas y Útiles
 
 ```python
-# ✅ Usa emojis y formato claro
-return [TextContent(
-    type="text",
-    text="✅ Operación exitosa!\n\n"
-         "📊 Resultados:\n"
-         f"   • Total: ${total:,.2f}\n"
-         f"   • Impuesto: ${impuesto:,.2f}\n"
-         f"   • Subtotal: ${subtotal:,.2f}"
-)]
+# ✅ Usa emojis y formato claro para mejor UX
+@mcp.tool()
+async def calcular_total(subtotal: float, impuesto: float) -> str:
+    """Calcula el total incluyendo impuestos."""
+    total = subtotal * (1 + impuesto)
+    impuesto_monto = subtotal * impuesto
+    
+    return (
+        "✅ Cálculo completado!\n\n"
+        "📊 Resultados:\n"
+        f"   • Subtotal: ${subtotal:,.2f}\n"
+        f"   • Impuesto ({impuesto*100}%): ${impuesto_monto:,.2f}\n"
+        f"   • Total: ${total:,.2f}"
+    )
 ```
 
 ## Herramientas Asíncronas

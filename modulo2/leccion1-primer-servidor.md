@@ -2,23 +2,94 @@
 
 ## Objetivo
 
-Crear un servidor MCP funcional desde cero que exponga una herramienta simple.
+Crear un servidor MCP funcional desde cero que exponga una herramienta simple. Aprenderemos dos enfoques: usando **FastMCP** (recomendado para empezar) y el **SDK base** (más control).
 
-## Servidor Básico: "Hola Mundo"
+## Opción 1: Servidor con FastMCP (Recomendado)
 
-### Código Completo
+FastMCP simplifica enormemente la creación de servidores usando **type hints** y **docstrings**.
+
+### Código Completo con FastMCP
 
 ```python
-# src/hello_server.py
+# hello_server_fast.py
 """
-Mi primer servidor MCP
-Un servidor simple que puede saludar
+Mi primer servidor MCP usando FastMCP
+Un servidor simple que puede saludar y despedirse
+"""
+
+from mcp.server.fastmcp import FastMCP
+import logging
+
+# ⚠️ IMPORTANTE: NO usar print() en servidores STDIO
+# Configurar logging para escribir a stderr
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
+
+# Crear servidor con FastMCP
+mcp = FastMCP("hello-mcp")
+
+@mcp.tool()
+async def saludar(nombre: str, formal: bool = False) -> str:
+    """Saluda a una persona por su nombre.
+    
+    Args:
+        nombre: El nombre de la persona a saludar
+        formal: Si el saludo debe ser formal (True) o casual (False)
+    """
+    logger.info(f"Saludando a {nombre} ({'formal' if formal else 'casual'})")
+    
+    if formal:
+        return f"Buenos días, estimado/a {nombre}. Es un placer saludarle."
+    else:
+        return f"¡Hola {nombre}! ¿Cómo estás?"
+
+@mcp.tool()
+async def despedir(nombre: str) -> str:
+    """Se despide de una persona.
+    
+    Args:
+        nombre: El nombre de la persona
+    """
+    logger.info(f"Despidiendo a {nombre}")
+    return f"¡Hasta luego, {nombre}! Que tengas un excelente día."
+
+# Punto de entrada
+if __name__ == "__main__":
+    logger.info("Iniciando servidor Hello MCP con FastMCP...")
+    mcp.run(transport='stdio')
+```
+
+**¿Qué hace FastMCP automáticamente?**
+- ✅ Lee los **type hints** (`nombre: str`, `formal: bool`) para crear el `inputSchema`
+- ✅ Usa el **docstring** como `description` de la herramienta
+- ✅ Detecta parámetros **requeridos** vs **opcionales** (con valores por defecto)
+- ✅ Genera nombres de herramientas desde los nombres de función
+- ✅ Simplifica enormemente el código
+
+## Opción 2: Servidor con SDK Base (Más Control)
+
+Si necesitas control total sobre el esquema JSON o características avanzadas:
+
+### Código Completo con SDK Base
+
+```python
+# hello_server_base.py
+"""
+Mi primer servidor MCP usando el SDK base
 """
 
 import asyncio
 from mcp.server import Server
 from mcp.server.stdio import stdio_server
 from mcp.types import Tool, TextContent
+import logging
+
+# Configurar logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # Crear instancia del servidor
 server = Server("hello-mcp")

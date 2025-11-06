@@ -83,4 +83,28 @@ y este proyecto adhiere a [Semantic Versioning](https://semver.org/lang/es/).
 ### 🔜 Planeado
 - Más ejemplos de código (conversor, generador de contraseñas, TODO)
 - Videos tutoriales y ejercicios interactivos
-- Tests automatizados y CI
+- Tests automatizados adicionales
+
+## [1.2.0] - 2025-11-06
+
+### ✨ Añadido
+- **FastMCP**: Ejemplos y tutoriales usando FastMCP para desarrollo simplificado
+- **Guía de `uv`**: Instrucciones para usar `uv` como gestor de paquetes moderno
+- **Advertencias críticas sobre logging**: Documentación sobre el uso correcto de logging en servidores STDIO
+- **Terminología oficial**: Actualización completa con términos oficiales (MCP Host, Client, Server)
+- **Arquitectura interna**: Sección expandida sobre el flujo interno del servidor y negociación de capacidades
+- **Estructura de proyecto**: Organización recomendada de archivos y carpetas
+
+### 🛠️ Cambiado
+- Módulo 1: Lección 1.1 actualizada con terminología oficial y ejemplos de FastMCP
+- Módulo 1: Lección 1.2 mejorada con arquitectura interna y estructura de ficheros
+- Módulo 1: Lección 1.3 actualizada con instalación usando `uv` y advertencias de logging
+- Módulo 2: Lección 2.1 reescrita con ejemplos usando FastMCP y SDK base
+- Módulo 2: Lección 2.2 mejorada con FastMCP, mejores prácticas y advertencias de logging
+- requirements.txt actualizado a MCP SDK 1.2.0+ con soporte para FastMCP
+- README actualizado con badges y menciones a las nuevas prácticas
+
+### 📚 Recursos
+- Enlaces a documentación oficial en https://modelcontextprotocol.io/
+- Guías basadas en quickstart oficial de MCP
+- Mejores prácticas alineadas con la especificación MCP

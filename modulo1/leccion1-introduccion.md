@@ -22,11 +22,27 @@ Antes de MCP, cada aplicación de IA tenía que crear sus propias integraciones 
 
 ## Conceptos Fundamentales
 
-### 1. Cliente MCP
-El cliente es la aplicación que utiliza la IA (por ejemplo, Claude Desktop, VS Code con Copilot).
+### Arquitectura MCP: Host, Cliente y Servidor
 
-### 2. Servidor MCP
-El servidor expone capacidades (tools, resources, prompts) que el cliente puede usar.
+MCP sigue una arquitectura cliente-servidor con tres participantes clave:
+
+#### 1. MCP Host (Aplicación de IA)
+El **host** es la aplicación de IA que coordina todo (por ejemplo, Claude Desktop, VS Code). El host:
+- Gestiona la interacción con el usuario
+- Ejecuta el modelo de lenguaje (LLM)
+- Crea y gestiona múltiples clientes MCP
+
+#### 2. MCP Client (Componente de Conexión)
+El **cliente** es un componente dentro del host que:
+- Mantiene una conexión **uno-a-uno** con un servidor MCP
+- Obtiene contexto del servidor para que el host lo use
+- El host crea un cliente por cada servidor al que se conecta
+
+#### 3. MCP Server (Tu Implementación)
+El **servidor** es el programa que proporcionas y que:
+- Expone capacidades (tools, resources, prompts)
+- Puede ejecutarse localmente (STDIO) o remotamente (HTTP)
+- Responde a las peticiones del cliente
 
 ### 3. Componentes Principales
 
@@ -53,19 +69,31 @@ Templates predefinidos para interacciones comunes:
 ## Arquitectura Básica
 
 ```
-┌─────────────────┐         ┌──────────────────┐
-│  Cliente MCP    │◄───────►│  Servidor MCP    │
-│  (Claude, etc.) │  JSON-RPC│  (Tu código)     │
-└─────────────────┘         └──────────────────┘
-                                    │
-                                    ▼
-                            ┌──────────────────┐
-                            │  Tus Recursos    │
-                            │  - Archivos      │
-                            │  - APIs          │
-                            │  - Databases     │
-                            └──────────────────┘
+┌─────────────────────────────────────────┐
+│         MCP HOST                        │
+│    (Claude Desktop, VS Code, etc.)      │
+│                                         │
+│  ┌─────────────┐    ┌─────────────┐   │
+│  │ MCP Client  │    │ MCP Client  │   │
+│  │     #1      │    │     #2      │   │
+│  └──────┬──────┘    └──────┬──────┘   │
+└─────────┼──────────────────┼──────────┘
+          │                  │
+          │ JSON-RPC        │ JSON-RPC
+          ▼                  ▼
+┌──────────────────┐  ┌──────────────────┐
+│  MCP Server #1   │  │  MCP Server #2   │
+│  (Tu código)     │  │  (Tu código)     │
+└────────┬─────────┘  └────────┬─────────┘
+         │                     │
+         ▼                     ▼
+   ┌──────────┐          ┌──────────┐
+   │ Recursos │          │ Recursos │
+   │ Locales  │          │   API    │
+   └──────────┘          └──────────┘
 ```
+
+**Relación 1:1**: Cada MCP Client mantiene una conexión dedicada con un MCP Server.
 
 ## Comunicación
 
@@ -108,7 +136,40 @@ async def consultar_crm(cliente_id: str):
 3. **Modular**: Combina múltiples servidores
 4. **Open Source**: Comunidad activa y creciente
 
-## Ejemplo Simple
+## Ejemplo Simple con FastMCP
+
+MCP proporciona **FastMCP**, una interfaz simplificada que usa type hints y docstrings para definir herramientas automáticamente:
+
+```python
+from mcp.server.fastmcp import FastMCP
+
+# Crear servidor con FastMCP
+mcp = FastMCP("mi-primer-servidor")
+
+# Definir una herramienta usando un decorador
+@mcp.tool()
+async def saludar(nombre: str) -> str:
+    """Saluda a una persona por su nombre.
+    
+    Args:
+        nombre: El nombre de la persona a saludar
+    """
+    return f"¡Hola, {nombre}!"
+
+# Ejecutar el servidor
+if __name__ == "__main__":
+    mcp.run(transport='stdio')
+```
+
+**¿Qué hace FastMCP?**
+- Lee los type hints para generar automáticamente el `inputSchema`
+- Usa el docstring como `description` de la herramienta
+- Simplifica el código eliminando boilerplate
+- Perfecto para proyectos nuevos
+
+### Ejemplo con el SDK Base (Más Control)
+
+Si necesitas más control sobre la configuración:
 
 ```python
 from mcp.server import Server
@@ -117,18 +178,22 @@ from mcp.types import Tool, TextContent
 # Crear servidor
 server = Server("mi-primer-servidor")
 
-# Definir una herramienta
+# Definir herramientas manualmente
 @server.list_tools()
 async def list_tools():
     return [
         Tool(
             name="saludar",
-            description="Saluda a una persona",
+            description="Saluda a una persona por su nombre",
             inputSchema={
                 "type": "object",
                 "properties": {
-                    "nombre": {"type": "string"}
-                }
+                    "nombre": {
+                        "type": "string",
+                        "description": "El nombre de la persona"
+                    }
+                },
+                "required": ["nombre"]
             }
         )
     ]

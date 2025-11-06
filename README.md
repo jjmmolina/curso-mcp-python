@@ -1,0 +1,83 @@
+# Curso: Model Context Protocol (MCP) en Python
+
+## 📚 Descripción del Curso
+
+Bienvenido al curso completo sobre **Model Context Protocol (MCP)** en Python. Este curso te enseñará desde los fundamentos hasta la implementación avanzada de servidores MCP, permitiéndote crear herramientas que extienden las capacidades de los asistentes de IA como Claude y GitHub Copilot.
+
+## 🎯 Objetivos del Curso
+
+- Comprender qué es MCP y por qué es importante
+- Aprender a crear servidores MCP en Python
+- Implementar herramientas (tools), recursos (resources) y prompts
+- Integrar servidores MCP con clientes como Claude Desktop
+- Desarrollar proyectos prácticos del mundo real
+
+## 📋 Requisitos Previos
+
+- Python 3.10 o superior
+- Conocimientos básicos de Python
+- Familiaridad con conceptos de programación asíncrona (async/await)
+- Editor de código (VS Code recomendado)
+
+## 📖 Estructura del Curso
+
+### Módulo 1: Introducción a MCP
+- [Lección 1.1: ¿Qué es MCP?](modulo1/leccion1-introduccion.md)
+- [Lección 1.2: Arquitectura y Conceptos Clave](modulo1/leccion2-arquitectura.md)
+- [Lección 1.3: Configuración del Entorno](modulo1/leccion3-configuracion.md)
+
+### Módulo 2: Primeros Pasos
+- [Lección 2.1: Tu Primer Servidor MCP](modulo2/leccion1-primer-servidor.md)
+- [Lección 2.2: Implementando Tools](modulo2/leccion2-tools.md)
+- [Lección 2.3: Trabajando con Resources](modulo2/leccion3-resources.md)
+
+### Módulo 3: Características Avanzadas
+- [Lección 3.1: Prompts Personalizados](modulo3/leccion1-prompts.md)
+- [Lección 3.2: Manejo de Errores y Logging](modulo3/leccion2-errores-logging.md)
+- [Lección 3.3: Seguridad y Mejores Prácticas](modulo3/leccion3-seguridad.md)
+
+### Módulo 4: Proyectos Prácticos
+- [Proyecto 1: Servidor de Gestión de Archivos](modulo4/proyecto1-archivos.md)
+- [Proyecto 2: Integración con APIs Externas](modulo4/proyecto2-apis.md)
+- [Proyecto 3: Sistema de Base de Datos](modulo4/proyecto3-database.md)
+
+## 🚀 Cómo Usar Este Curso
+
+1. Lee cada lección en orden
+2. Completa los ejercicios prácticos
+3. Experimenta con el código de ejemplo
+4. Construye los proyectos finales
+
+## 📦 Instalación
+
+```bash
+# Crear entorno virtual
+python -m venv venv
+
+# Activar entorno virtual (Windows)
+venv\Scripts\activate
+
+# Activar entorno virtual (Linux/Mac)
+source venv/bin/activate
+
+# Instalar dependencias
+pip install -r requirements.txt
+```
+
+## 📚 Recursos Adicionales
+
+- [Documentación oficial de MCP](https://modelcontextprotocol.io/)
+- [MCP Python SDK](https://github.com/modelcontextprotocol/python-sdk)
+- [Ejemplos de la comunidad](https://github.com/modelcontextprotocol/servers)
+
+## 🤝 Contribuciones
+
+Este es un curso de código abierto. Si encuentras errores o quieres mejorar el contenido, ¡las contribuciones son bienvenidas!
+
+## 📝 Licencia
+
+Este curso está bajo licencia MIT.
+
+---
+
+**¡Comencemos a aprender MCP en Python! 🐍✨**

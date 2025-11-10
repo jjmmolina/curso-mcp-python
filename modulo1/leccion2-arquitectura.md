@@ -32,6 +32,71 @@ MCP sigue un modelo cliente-servidor. La comunicación se realiza mediante el pr
 
 El **cliente** (como Claude) es responsable de gestionar la interacción con el usuario y el modelo de lenguaje (LLM). Cuando el LLM decide que necesita ejecutar una acción o leer datos, el cliente envía una solicitud JSON-RPC al **servidor**.
 
+### Negociación de Capacidades (El Handshake `initialize`)
+
+Antes de que un cliente pueda usar las herramientas o recursos de un servidor, debe ocurrir un "handshake" (apretón de manos) para establecer las reglas de comunicación. Este proceso se llama **negociación de capacidades** y se realiza a través del método `initialize`. Es el primer paso en el ciclo de vida de la comunicación.
+
+1.  **El Cliente Inicia**: Tan pronto como el MCP Host (p. ej., VS Code) inicia tu servidor, el MCP Client envía una petición `initialize`. Esta petición informa al servidor sobre las capacidades del cliente.
+
+    *Petición del Cliente:*
+    ```json
+    {
+      "jsonrpc": "2.0",
+      "id": 1,
+      "method": "initialize",
+      "params": {
+        "processId": 12345,
+        "clientInfo": {
+          "name": "Visual Studio Code - Copilot",
+          "version": "1.95.0"
+        },
+        "capabilities": {}
+      }
+    }
+    ```
+
+2.  **El Servidor Responde**: Tu servidor MCP debe responder con sus propias capacidades. Esto le dice al cliente qué versión del protocolo MCP habla y qué características opcionales soporta.
+
+    *Respuesta del Servidor:*
+    ```json
+    {
+      "jsonrpc": "2.0",
+      "id": 1,
+      "result": {
+        "serverInfo": {
+          "name": "mi-servidor-de-notas",
+          "version": "1.0.0"
+        },
+        "capabilities": {
+          "protocolVersion": "1.0",
+          "workspace": {
+            "reload": {
+              "supported": true
+            }
+          }
+        }
+      }
+    }
+    ```
+
+#### Capacidades Clave del Servidor
+
+-   `protocolVersion`: **(Obligatorio)** La versión del protocolo MCP que implementa tu servidor. Actualmente, debe ser `"1.0"`.
+-   `workspace/reload`: Una capacidad opcional que, si se establece en `true`, le dice al cliente que tu servidor puede recargar su configuración o estado si se le solicita. Esto es útil si, por ejemplo, tu servidor lee archivos de configuración y quieres que el cliente pueda pedirle que los vuelva a leer sin reiniciarse.
+
+El SDK de `mcp` se encarga de esta respuesta por ti. `FastMCP` lo hace aún más sencillo:
+
+```python
+# Con FastMCP, la información del servidor se pasa en el constructor
+server = FastMCP(
+    name="mi-servidor-de-notas",
+    description="Un servidor para gestionar notas.",
+    version="1.0.0"
+)
+
+# El SDK generará automáticamente la respuesta `initialize` correcta.
+```
+
 ## Arquitectura Interna del Servidor
 
 Dentro de tu aplicación Python, el SDK de MCP (`mcp.server`) proporciona las abstracciones para manejar la comunicación y la lógica del servidor.
@@ -146,18 +211,23 @@ server.include_router(ficheros.router)
 
 ## Ciclo de Vida de una Solicitud
 
-### 1. Inicialización
-El cliente se conecta y pregunta al servidor qué capacidades tiene.
+### 1. Inicialización y Negociación
+El cliente se conecta y pregunta al servidor qué capacidades tiene. Este es el handshake.
 
-```python
+```
 CLIENTE → SERVIDOR: initialize
-SERVIDOR → CLIENTE: initialize_response (capacidades del servidor)
+SERVIDOR → CLIENTE: initialize_response (con las capacidades del servidor)
+```
+Tras una inicialización exitosa, el cliente envía una notificación `initialized`.
+
+```
+CLIENTE → SERVIDOR: initialized
 ```
 
 ### 2. Descubrimiento
-El cliente pide la lista de todos los componentes disponibles.
+El cliente pide la lista de todos los componentes disponibles que el servidor ha expuesto.
 
-```python
+```
 CLIENTE → SERVIDOR: tools/list
 SERVIDOR → CLIENTE: [lista de todos los tools]
 

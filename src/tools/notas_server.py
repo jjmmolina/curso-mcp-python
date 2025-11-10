@@ -8,9 +8,8 @@ from pathlib import Path
 from datetime import datetime
 from typing import List, Optional
 from pydantic import BaseModel, Field
-from mcp.server import Server
-from mcp.server.stdio import stdio_server
-from mcp.types import Tool, TextContent
+from mcp.fastmcp import FastMCP
+from mcp.types import TextContent
 import logging
 
 logging.basicConfig(level=logging.INFO)
@@ -23,17 +22,6 @@ class Nota(BaseModel):
     contenido: str
     fecha_creacion: str
     etiquetas: List[str] = []
-
-class CrearNotaArgs(BaseModel):
-    titulo: str = Field(..., min_length=1, max_length=100)
-    contenido: str = Field(..., min_length=1)
-    etiquetas: Optional[List[str]] = []
-
-class BuscarNotasArgs(BaseModel):
-    termino: str = Field(..., min_length=1)
-
-class EliminarNotaArgs(BaseModel):
-    id: str
 
 # Almacenamiento
 NOTAS_FILE = Path("data/notas.json")
@@ -59,122 +47,90 @@ def guardar_notas(notas: List[Nota]):
         logger.error(f"Error guardando notas: {e}")
         raise
 
-# Servidor
-server = Server("notas-mcp")
+# Servidor con FastMCP
+server = FastMCP(
+    "notas-mcp",
+    "Un servidor para gestionar una lista de notas.",
+)
 
-@server.list_tools()
-async def list_tools() -> List[Tool]:
-    return [
-        Tool(
-            name="crear_nota",
-            description="Crea una nueva nota con título, contenido y etiquetas opcionales",
-            inputSchema={
-                "type": "object",
-                "properties": {
-                    "titulo": {"type": "string", "minLength": 1, "maxLength": 100},
-                    "contenido": {"type": "string", "minLength": 1},
-                    "etiquetas": {"type": "array", "items": {"type": "string"}, "default": []}
-                },
-                "required": ["titulo", "contenido"]
-            }
-        ),
-        Tool(
-            name="listar_notas",
-            description="Lista todas las notas guardadas",
-            inputSchema={"type": "object", "properties": {}}
-        ),
-        Tool(
-            name="buscar_notas",
-            description="Busca notas por término en título o contenido",
-            inputSchema={
-                "type": "object",
-                "properties": {"termino": {"type": "string", "minLength": 1}},
-                "required": ["termino"]
-            }
-        ),
-        Tool(
-            name="eliminar_nota",
-            description="Elimina una nota por su ID",
-            inputSchema={
-                "type": "object",
-                "properties": {"id": {"type": "string"}},
-                "required": ["id"]
-            }
-        ),
-    ]
-
-@server.call_tool()
-async def call_tool(name: str, arguments: dict) -> List[TextContent]:
-    """Ejecuta la herramienta solicitada"""
+@server.tool()
+async def crear_nota(
+    titulo: str = Field(..., description="Título de la nota", min_length=1, max_length=100),
+    contenido: str = Field(..., description="Contenido de la nota", min_length=1),
+    etiquetas: Optional[List[str]] = Field(None, description="Etiquetas opcionales para la nota")
+) -> List[TextContent]:
+    """Crea una nueva nota con título, contenido y etiquetas opcionales."""
     try:
-        if name == "crear_nota":
-            return await crear_nota(arguments)
-        if name == "listar_notas":
-            return await listar_notas()
-        if name == "buscar_notas":
-            return await buscar_notas(arguments)
-        if name == "eliminar_nota":
-            return await eliminar_nota(arguments)
-        # Herramienta no encontrada
-        logger.error(f"Herramienta no encontrada: {name}")
-        return [TextContent(type="text", text=f"❌ Error: Herramienta no encontrada: {name}")]
-    except ValueError as e:
-        logger.error(f"Error de validación en {name}: {e}")
-        return [TextContent(type="text", text=f"❌ Error de validación: {str(e)}")]
+        notas = cargar_notas()
+        nueva_nota = Nota(
+            id=f"nota_{datetime.now().timestamp()}",
+            titulo=titulo,
+            contenido=contenido,
+            fecha_creacion=datetime.now().isoformat(),
+            etiquetas=etiquetas or []
+        )
+        notas.append(nueva_nota)
+        guardar_notas(notas)
+        return [TextContent(type="text", text=f"✅ Nota creada\nID: {nueva_nota.id}\nTítulo: {nueva_nota.titulo}")]
     except Exception as e:
-        logger.error(f"Error en {name}: {e}", exc_info=True)
-        return [TextContent(type="text", text=f"❌ Error interno del servidor: {str(e)}")]
+        logger.error(f"Error en crear_nota: {e}", exc_info=True)
+        return [TextContent(type="text", text=f"❌ Error interno al crear la nota: {str(e)}")]
 
-async def crear_nota(arguments: dict) -> List[TextContent]:
-    args = CrearNotaArgs(**arguments)
-    notas = cargar_notas()
-    nueva_nota = Nota(
-        id=f"nota_{datetime.now().timestamp()}",
-        titulo=args.titulo,
-        contenido=args.contenido,
-        fecha_creacion=datetime.now().isoformat(),
-        etiquetas=args.etiquetas or []
-    )
-    notas.append(nueva_nota)
-    guardar_notas(notas)
-    return [TextContent(type="text", text=f"✅ Nota creada\nID: {nueva_nota.id}\nTítulo: {nueva_nota.titulo}")]
-
+@server.tool()
 async def listar_notas() -> List[TextContent]:
-    notas = cargar_notas()
-    if not notas:
-        return [TextContent(type="text", text="📝 No hay notas guardadas.")]
-    resultado = [
-        "📝 Lista de notas:",
-        "",
-    ]
-    for n in notas:
-        etiquetas = f"[{', '.join(n.etiquetas)}]" if n.etiquetas else ""
-        resultado.append(f"• {n.titulo} {etiquetas}\n  ID: {n.id}\n  Creada: {n.fecha_creacion}")
-    return [TextContent(type="text", text="\n".join(resultado))]
+    """Lista todas las notas guardadas."""
+    try:
+        notas = cargar_notas()
+        if not notas:
+            return [TextContent(type="text", text="📝 No hay notas guardadas.")]
+        
+        resultado = ["📝 Lista de notas:", ""]
+        for n in notas:
+            etiquetas_str = f"[{', '.join(n.etiquetas)}]" if n.etiquetas else ""
+            resultado.append(f"• {n.titulo} {etiquetas_str}\n  ID: {n.id}\n  Creada: {n.fecha_creacion}")
+        
+        return [TextContent(type="text", text="\n".join(resultado))]
+    except Exception as e:
+        logger.error(f"Error en listar_notas: {e}", exc_info=True)
+        return [TextContent(type="text", text=f"❌ Error interno al listar las notas: {str(e)}")]
 
-async def buscar_notas(arguments: dict) -> List[TextContent]:
-    args = BuscarNotasArgs(**arguments)
-    notas = cargar_notas()
-    t = args.termino.lower()
-    encontradas = [n for n in notas if t in n.titulo.lower() or t in n.contenido.lower()]
-    if not encontradas:
-        return [TextContent(type="text", text=f"🔍 Sin resultados para '{args.termino}'.")]
-    texto = "\n\n".join([f"• {n.titulo}\n  ID: {n.id}" for n in encontradas])
-    return [TextContent(type="text", text=f"🔍 Resultados para '{args.termino}':\n\n{texto}")]
+@server.tool()
+async def buscar_notas(termino: str = Field(..., description="Término a buscar en títulos o contenidos", min_length=1)) -> List[TextContent]:
+    """Busca notas por término en título o contenido."""
+    try:
+        notas = cargar_notas()
+        t = termino.lower()
+        encontradas = [n for n in notas if t in n.titulo.lower() or t in n.contenido.lower()]
+        
+        if not encontradas:
+            return [TextContent(type="text", text=f"🔍 Sin resultados para '{termino}'.")]
+        
+        texto = "\n\n".join([f"• {n.titulo}\n  ID: {n.id}" for n in encontradas])
+        return [TextContent(type="text", text=f"🔍 Resultados para '{termino}':\n\n{texto}")]
+    except Exception as e:
+        logger.error(f"Error en buscar_notas: {e}", exc_info=True)
+        return [TextContent(type="text", text=f"❌ Error interno al buscar notas: {str(e)}")]
 
-async def eliminar_nota(arguments: dict) -> List[TextContent]:
-    args = EliminarNotaArgs(**arguments)
-    notas = cargar_notas()
-    nuevas = [n for n in notas if n.id != args.id]
-    if len(nuevas) == len(notas):
-        return [TextContent(type="text", text=f"❌ No se encontró nota con ID: {args.id}")]
-    guardar_notas(nuevas)
-    return [TextContent(type="text", text=f"🗑️ Nota eliminada (ID: {args.id})")]
+@server.tool()
+async def eliminar_nota(id: str = Field(..., description="ID de la nota a eliminar")) -> List[TextContent]:
+    """Elimina una nota por su ID."""
+    try:
+        notas = cargar_notas()
+        nuevas = [n for n in notas if n.id != id]
+        
+        if len(nuevas) == len(notas):
+            return [TextContent(type="text", text=f"❌ No se encontró nota con ID: {id}")]
+        
+        guardar_notas(nuevas)
+        return [TextContent(type="text", text=f"🗑️ Nota eliminada (ID: {id})")]
+    except Exception as e:
+        logger.error(f"Error en eliminar_nota: {e}", exc_info=True)
+        return [TextContent(type="text", text=f"❌ Error interno al eliminar la nota: {str(e)}")]
 
 async def main():
-    logger.info("Iniciando servidor de notas MCP...")
-    async with stdio_server() as (read_stream, write_stream):
-        await server.run(read_stream, write_stream, server.create_initialization_options())
+    logger.info("Iniciando servidor de notas con FastMCP...")
+    # FastMCP se encarga automáticamente del bucle de lectura/escritura por STDIO
+    await server.run()
 
 if __name__ == "__main__":
     asyncio.run(main())

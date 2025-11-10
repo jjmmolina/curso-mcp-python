@@ -3,7 +3,6 @@ Servidor MCP con prompts para asistencia de código (ejemplo Módulo 3)
 """
 
 import asyncio
-from typing import List
 from pydantic import Field
 from mcp.fastmcp import FastMCP
 from mcp.types import PromptMessage, TextContent, GetPromptResult
